@@ -1,6 +1,7 @@
 package com.example.movies
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class Movie(
     @SerializedName("id")
@@ -15,4 +16,4 @@ data class Movie(
     val poster: Poster,
     @SerializedName("rating")
     val rating: Rating
-)
+) : Serializable
