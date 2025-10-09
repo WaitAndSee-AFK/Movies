@@ -11,22 +11,39 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 private const val TAG = "MainViewModel"
-private var page = 1
 
-class MainViewModel(application: Application): AndroidViewModel(application) {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private var page = 1
     private val _movies = MutableLiveData<List<Movie>>()
     val movies: LiveData<List<Movie>>
         get() = _movies
 
+    private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
+    val isLoading: LiveData<Boolean>
+        get() = _isLoading
+
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
+    init {
+        loadMovies()
+    }
+
     fun loadMovies() {
+        val loading = _isLoading.value
+        if (loading != null && loading) return
         val disposable: Disposable = ApiFactory.apiService.loadMovies(page)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({movieResp ->
+            .doOnSubscribe { _isLoading.value = true }
+            .doAfterTerminate { _isLoading.value = false }
+            .subscribe({ movieResp ->
+                val loadedMovies = _movies.value ?: emptyList()
+                val updateMovies = loadedMovies.toMutableList().apply {
+                    addAll(movieResp.movies)
+                }
+                _movies.value = updateMovies
+                Log.d(TAG, "Loaded $page")
                 page++
-                _movies.value = movieResp.movies
             }, { err ->
                 Log.d(TAG, err.toString())
             })

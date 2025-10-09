@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
 android {
@@ -37,6 +38,8 @@ android {
 }
 
 dependencies {
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
