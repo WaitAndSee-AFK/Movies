@@ -12,14 +12,31 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 
 private const val TAG = "MovieDetailViewModel"
 class MovieDetailViewModel(application: Application) : AndroidViewModel(application) {
+    private val _reviews = MutableLiveData<List<Review>>()
+    val reviews: LiveData<List<Review>>
+        get() = _reviews
+
     private val _trailers = MutableLiveData<List<Trailer>>()
     val trailers: LiveData<List<Trailer>>
         get() = _trailers
 
     private val compositeDisposable = CompositeDisposable()
 
+    fun loadReviews(id: Int) {
+        val disposable =  ApiFactory.apiService.loadReviews(id)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map { it.reviews }
+            .subscribe({
+                    reviewsList -> _reviews.value = reviewsList
+            }, {
+                    err -> Log.d(TAG, err.toString())
+            })
+        compositeDisposable.add(disposable)
+    }
+
     fun loadTrailers(id: Int) {
-        val disposable =  ApiFactory.apiService.loadTrailers(id)
+        val disposable = ApiFactory.apiService.loadTrailers(id)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map {response -> response.trailersList.trailers}

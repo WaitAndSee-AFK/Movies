@@ -32,6 +32,8 @@ class MovieDetailActivity : AppCompatActivity() {
     private lateinit var viewModel: MovieDetailViewModel
     private lateinit var recyclerViewTrailers: RecyclerView
     private lateinit var trailersAdapter: TrailersAdapter
+    private lateinit var recyclerViewReviews: RecyclerView
+    private lateinit var reviewsAdapter: ReviewsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +41,9 @@ class MovieDetailActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this).get(MovieDetailViewModel::class.java)
         initViews()
         trailersAdapter = TrailersAdapter()
+        reviewsAdapter = ReviewsAdapter()
         recyclerViewTrailers.adapter = trailersAdapter
-
+        recyclerViewReviews.adapter = reviewsAdapter
         installingMovieInformation()
     }
 
@@ -64,6 +67,11 @@ class MovieDetailActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+
+        viewModel.reviews.observe(this, Observer<List<Review>> {
+            reviews -> reviewsAdapter.updateReviews(reviews)
+        })
+        viewModel.loadReviews(movie.id)
     }
 
     fun newIntent(context: Context, movie: Movie): Intent {
@@ -78,5 +86,6 @@ class MovieDetailActivity : AppCompatActivity() {
         textViewYear = findViewById(R.id.textViewYear)
         textViewDescription = findViewById(R.id.textViewDescription)
         recyclerViewTrailers = findViewById(R.id.recyclerViewTrailers)
+        recyclerViewReviews = findViewById(R.id.recyclerViewReviews)
     }
 }
