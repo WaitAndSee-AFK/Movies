@@ -2,6 +2,7 @@ package com.example.movies
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
@@ -34,6 +36,7 @@ class MovieDetailActivity : AppCompatActivity() {
     private lateinit var trailersAdapter: TrailersAdapter
     private lateinit var recyclerViewReviews: RecyclerView
     private lateinit var reviewsAdapter: ReviewsAdapter
+    private lateinit var imageViewStar: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +75,29 @@ class MovieDetailActivity : AppCompatActivity() {
             reviews -> reviewsAdapter.updateReviews(reviews)
         })
         viewModel.loadReviews(movie.id)
+
+        val starOff: Drawable = ContextCompat.getDrawable(
+            this@MovieDetailActivity,
+            android.R.drawable.star_big_off
+        )
+        val starOn: Drawable = ContextCompat.getDrawable(
+            this@MovieDetailActivity,
+            android.R.drawable.star_big_on
+        )
+        viewModel.getFavouriteMovie(movie.id).observe(this, Observer<Movie?> {
+            movieFromDB ->
+            if (movieFromDB == null) {
+                imageViewStar.setImageDrawable(starOff)
+                imageViewStar.setOnClickListener {
+                    viewModel.insertMovie(movie)
+                }
+            } else {
+                imageViewStar.setImageDrawable(starOn)
+                imageViewStar.setOnClickListener {
+                    viewModel.removeMovie(movie.id)
+                }
+            }
+        })
     }
 
     fun newIntent(context: Context, movie: Movie): Intent {
@@ -87,5 +113,6 @@ class MovieDetailActivity : AppCompatActivity() {
         textViewDescription = findViewById(R.id.textViewDescription)
         recyclerViewTrailers = findViewById(R.id.recyclerViewTrailers)
         recyclerViewReviews = findViewById(R.id.recyclerViewReviews)
+        imageViewStar = findViewById(R.id.imageViewStar)
     }
 }
